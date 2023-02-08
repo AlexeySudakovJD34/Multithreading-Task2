@@ -13,8 +13,6 @@ public class Main {
                 String route = generateRoute("RLRFR", 100);
                 int rightCommands = rightCounter(route);
                 System.out.println(route + " -> количество команд R = " + rightCommands);
-
-                // работаем с Map
                 synchronized (sizeToFreq) {
                     if (sizeToFreq.containsKey(rightCommands)) {
                         sizeToFreq.replace(rightCommands, sizeToFreq.get(rightCommands) + 1);
@@ -33,7 +31,7 @@ public class Main {
                 + " встретилось " + sizeToFreq.get(maxKey) + " раз(а)");
         System.out.println("Другие размеры:");
         for (Integer key : sizeToFreq.keySet()) {
-            if (key != maxKey) {
+            if (key.equals(maxKey)) {
                 System.out.println("- " + key + " (" + sizeToFreq.get(key) + " раз)");
             }
         }
