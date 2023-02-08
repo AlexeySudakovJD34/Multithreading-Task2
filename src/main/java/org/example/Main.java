@@ -1,15 +1,15 @@
 package org.example;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Main {
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
     public static void main(String[] args) throws InterruptedException {
+        List<Thread> threads1 = new ArrayList<>();
+        List<Thread> threads2 = new ArrayList<>();
+
         for (int i = 0; i < 1000; i++) {
-            Runnable threadBody = () -> {
+            Thread thread1 = new Thread(() -> {
                 String route = generateRoute("RLRFR", 100);
                 int rightCommands = rightCounter(route);
                 System.out.println(route + " -> количество команд R = " + rightCommands);
@@ -19,16 +19,35 @@ public class Main {
                     } else {
                         sizeToFreq.put(rightCommands, 1);
                     }
+                    sizeToFreq.notify();
                 }
-            };
-            Thread thread = new Thread(threadBody);
-            thread.start();
-            thread.join();
+            });
+            threads1.add(thread1);
+            thread1.start();
+
+            Thread thread2 = new Thread(() -> {
+                while (!Thread.interrupted()) {
+                    synchronized (sizeToFreq) {
+                        try {
+                            sizeToFreq.wait();
+                        } catch (InterruptedException e) {
+                            return;
+                        }
+                        int foo = maxKeyCalc(sizeToFreq);
+                    }
+                }
+            });
+            threads2.add(thread2);
+            thread2.start();
         }
-        // для упрощения делаем допущение, что в коллекции есть один максимум по значениям
-        Integer maxKey = Collections.max(sizeToFreq.entrySet(), Map.Entry.comparingByValue()).getKey();
-        System.out.println("Самое частое количество повторений " + maxKey
-                + " встретилось " + sizeToFreq.get(maxKey) + " раз(а)");
+        for (Thread thread1 : threads1) {
+            thread1.join();
+        }
+        for (Thread thread2 : threads2) {
+            thread2.interrupt();
+        }
+        System.out.println();
+        Integer maxKey = maxKeyCalc(sizeToFreq);
         System.out.println("Другие размеры:");
         for (Integer key : sizeToFreq.keySet()) {
             if (!key.equals(maxKey)) {
@@ -52,6 +71,12 @@ public class Main {
             }
         }
         return counter;
+    }
+    public static Integer maxKeyCalc(Map<Integer, Integer> map) {
+        Integer maxKey = Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
+        System.out.println("Самое частое количество повторений " + maxKey
+                + " встретилось " + sizeToFreq.get(maxKey) + " раз(а)");
+        return maxKey;
     }
 }
 
