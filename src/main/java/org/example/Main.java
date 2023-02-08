@@ -31,7 +31,7 @@ public class Main {
                 + " встретилось " + sizeToFreq.get(maxKey) + " раз(а)");
         System.out.println("Другие размеры:");
         for (Integer key : sizeToFreq.keySet()) {
-            if (key.equals(maxKey)) {
+            if (!key.equals(maxKey)) {
                 System.out.println("- " + key + " (" + sizeToFreq.get(key) + " раз)");
             }
         }
